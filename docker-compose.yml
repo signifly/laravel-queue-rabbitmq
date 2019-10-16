@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+
+  app:
+    container_name: rabbit-app
+    image: signifly/exp-php7.3:latest
+    volumes:
+      - ./:/var/www/html:delegated
+    environment:
+      APP_ENV: local
+      RABBITMQ_HOST: rabbit
+      HOST: rabbit
+      MYSQL_HOST: mysql
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: 1
+
+  rabbit:
+    image: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASSWORD: guest
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_SSL_CACERTFILE: /rootCA.pem
+      RABBITMQ_SSL_CERTFILE: /rootCA.pem
+      RABBITMQ_SSL_KEYFILE: /rootCA.key
+      RABBITMQ_SSL_VERIFY: verify_none
+      RABBITMQ_SSL_FAIL_IF_NO_PEER_CERT: "false"
+    volumes:
+      - "./tests/files/rootCA.pem:/rootCA.pem:ro"
+      - "./tests/files/rootCA.key:/rootCA.key:ro"
+    ports:
+      - 5671:5671
+      - 5672:5672
