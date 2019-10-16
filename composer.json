@@ -1,11 +1,12 @@
 {
-  "name": "connors511/laravel-queue-rabbitmq",
+  "name": "signifly/laravel-queue-rabbitmq",
   "description": "RabbitMQ driver for Laravel Queue. Supports Laravel Horizon",
   "license": "MIT",
   "authors": [
     {
-      "name": "Vladimir Yuldashev",
-      "email": "misterio92@gmail.com"
+      "name": "Matthias S. Larsen",
+      "email": "msl@signifly.com",
+      "role": "Developer"
     }
   ],
   "require": {
@@ -33,9 +34,12 @@
       "Signifly\\LaravelQueueRabbitMQ\\Tests\\": "tests/"
     }
   },
+  "config": {
+      "sort-packages": true
+  },
   "extra": {
     "branch-alias": {
-      "dev-master": "9.0-dev"
+      "dev-master": "0.1-dev"
     },
     "laravel": {
       "providers": [
