@@ -27,10 +27,6 @@ class RabbitMQJob extends Job implements JobContract
     protected $consumer;
     protected $message;
 
-    public $exchange = 'default';
-    public $queue = 'default';
-    public $routingKey = null;
-
     public function __construct(
         Container $container,
         RabbitMQQueue $connection,
@@ -184,14 +180,5 @@ class RabbitMQJob extends Job implements JobContract
 
             throw $exception;
         }
-    }
-
-    public function rabbitMQOptions(): array
-    {
-        return [
-            'exchange' => $this->exchange,
-            'queue' => $this->queue,
-            'routing_key' => $this->routingKey
-        ];
     }
 }

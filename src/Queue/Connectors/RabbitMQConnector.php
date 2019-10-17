@@ -5,6 +5,7 @@ namespace Signifly\LaravelQueueRabbitMQ\Queue\Connectors;
 use Illuminate\Support\Arr;
 use Interop\Amqp\AmqpContext;
 use InvalidArgumentException;
+use Enqueue\AmqpTools\DelayStrategy;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Queue\Events\JobFailed;
 use Interop\Amqp\AmqpConnectionFactory;
@@ -14,9 +15,12 @@ use Illuminate\Queue\Events\WorkerStopping;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
+use Signifly\LaravelQueueRabbitMQ\Queue\Tools\BackoffStrategy;
+use Signifly\LaravelQueueRabbitMQ\Queue\Tools\BackoffStrategyAware;
+use Signifly\LaravelQueueRabbitMQ\Queue\Tools\ConstantBackoffStrategy;
 use Interop\Amqp\AmqpConnectionFactory as InteropAmqpConnectionFactory;
-use Enqueue\AmqpLib\AmqpConnectionFactory as EnqueueAmqpConnectionFactory;
 use Signifly\LaravelQueueRabbitMQ\Horizon\Listeners\RabbitMQFailedEvent;
+use Enqueue\AmqpLib\AmqpConnectionFactory as EnqueueAmqpConnectionFactory;
 use Signifly\LaravelQueueRabbitMQ\Horizon\RabbitMQQueue as HorizonRabbitMQQueue;
 
 class RabbitMQConnector implements ConnectorInterface
@@ -64,7 +68,27 @@ class RabbitMQConnector implements ConnectorInterface
         ]);
 
         if ($factory instanceof DelayStrategyAware) {
-            $factory->setDelayStrategy(new RabbitMqDlxDelayStrategy());
+            if (! class_exists($delayStrategyClass = Arr::get($config, 'delay.strategy')) || ! in_array(DelayStrategy::class, class_implements($delayStrategyClass))) {
+                $delayStrategyClass = RabbitMqDlxDelayStrategy::class;
+            }
+
+            /** @var DelayStrategy $delayStrategy */
+            $delayStrategy = new $delayStrategyClass();
+            if ($delayStrategy instanceof BackoffStrategyAware) {
+                if (! class_exists($backoffStrategyClass = Arr::get($config, 'delay.backoff.strategy')) || ! in_array(BackoffStrategy::class, class_implements($backoffStrategyClass))) {
+                    $backoffStrategyClass = ConstantBackoffStrategy::class;
+                }
+
+                /** @var BackoffStrategy $backoffStrategy */
+                $backoffStrategy = new $backoffStrategyClass(Arr::wrap(Arr::get($config, 'delay.backoff.options')));
+                $delayStrategy->setBackoffStrategy($backoffStrategy);
+            }
+
+            if ($delayStrategy instanceof PrioritizeAware) {
+                $delayStrategy->setPrioritize(Arr::get($config, 'delay.prioritize'));
+            }
+
+            $factory->setDelayStrategy($delayStrategy);
         }
 
         /** @var AmqpContext $context */

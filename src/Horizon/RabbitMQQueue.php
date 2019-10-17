@@ -44,7 +44,7 @@ class RabbitMQQueue extends BaseRabbitMQQueue
     {
         $payload = (new JobPayload($payload))->prepare($this->lastPushed)->value;
 
-        return tap(parent::pushRaw($payload, $queueName, $options), function () use ($queueName, $payload) {
+        return tap(parent::pushRaw($payload, $queueName, $this->makeOptions($payload, $options)), function () use ($queueName, $payload) {
             $this->event($this->getQueueName($queueName), new JobPushed($payload));
         });
     }
@@ -54,7 +54,7 @@ class RabbitMQQueue extends BaseRabbitMQQueue
     {
         $payload = (new JobPayload($this->createPayload($job, $data)))->prepare($job)->value;
 
-        return tap(parent::pushRaw($payload, $queueName, ['delay' => $this->secondsUntil($delay)]), function () use ($payload, $queueName) {
+        return tap(parent::pushRaw($payload, $queueName, $this->makeOptions($job, ['delay' => $this->secondsUntil($delay)])), function () use ($payload, $queueName) {
             $this->event($this->getQueueName($queueName), new JobPushed($payload));
         });
     }

@@ -40,17 +40,25 @@ class RabbitMQQueue extends Queue implements QueueContract
 
         $this->queueOptions = collect($config['options']['queues'])
             ->map(function ($queue) {
-                $queue['arguments'] = isset($queue['arguments'])
-                    ? json_decode($queue['arguments'], true)
-                    : [];
+                if (isset($queue['arguments'])) {
+                    $queue['arguments'] = is_string($queue['arguments'])
+                        ? json_decode($queue['arguments'], true)
+                        : $queue['arguments'];
+                } else {
+                    $queue['arguments'] = [];
+                }
                 return $queue;
             });
 
         $this->exchangeOptions = collect($config['options']['exchanges'])
             ->map(function ($exchange) {
-                $exchange['arguments'] = isset($exchange['arguments'])
-                    ? json_decode($exchange['arguments'], true)
-                    : [];
+                if (isset($exchange['arguments'])) {
+                    $exchange['arguments'] = is_string($exchange['arguments'])
+                        ? json_decode($exchange['arguments'], true)
+                        : $exchange['arguments'];
+                } else {
+                    $exchange['arguments'] = [];
+                }
                 return $exchange;
             });
 
@@ -85,7 +93,7 @@ class RabbitMQQueue extends Queue implements QueueContract
              * @var AmqpQueue $queue
              */
             [$queue, $topic] = $this->declareEverything(
-                $queueId ?: (isset($options['queue']) ? $options['queue'] : null),
+                (isset($options['queue']) ? $options['queue'] : null) ?: $queueId,
                 isset($options['exchange']) ? $options['exchange'] : null
             );
 
@@ -142,7 +150,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     {
         return $this->pushRaw(
             $this->createPayload($job, $queue, $data),
-            $queue, 
+            $queue,
             $this->makeOptions($job, ['delay' => $this->secondsUntil($delay)])
         );
     }
@@ -263,7 +271,15 @@ class RabbitMQQueue extends Queue implements QueueContract
     public function declareEverything(string $queueId = null, string $exchange = null): array
     {
         $queueId = $queueId ?: 'default';
-        $queueName = $this->getQueueName($queueId);
+
+        if (isset($this->queueOptions[$queueId])) {
+            $queueOptions = $this->queueOptions[$queueId];
+            $queueName = $queueOptions['name'];
+        } else {
+            $queueOptions = $this->queueOptions['default'];
+            $queueName = $queueId;
+        }
+
         $exchangeOptions = $this->exchangeOptions[$exchange ?: 'default'];
         $exchangeName = $exchangeOptions['name'] ?: $queueName;
 
@@ -287,27 +303,27 @@ class RabbitMQQueue extends Queue implements QueueContract
         }
 
         $queue = $this->context->createQueue($queueName);
-        $queue->setArguments($this->queueOptions[$queueId]['arguments']);
-        if ($this->queueOptions[$queueId]['passive']) {
+        $queue->setArguments($queueOptions['arguments']);
+        if ($queueOptions['passive']) {
             $queue->addFlag(AmqpQueue::FLAG_PASSIVE);
         }
-        if ($this->queueOptions[$queueId]['durable']) {
+        if ($queueOptions['durable']) {
             $queue->addFlag(AmqpQueue::FLAG_DURABLE);
         }
-        if ($this->queueOptions[$queueId]['exclusive']) {
+        if ($queueOptions['exclusive']) {
             $queue->addFlag(AmqpQueue::FLAG_EXCLUSIVE);
         }
-        if ($this->queueOptions[$queueId]['auto_delete']) {
+        if ($queueOptions['auto_delete']) {
             $queue->addFlag(AmqpQueue::FLAG_AUTODELETE);
         }
 
-        if ($this->queueOptions[$queueId]['declare'] && ! in_array($queueName, $this->declaredQueues, true)) {
+        if ($queueOptions['declare'] && ! in_array($queueName, $this->declaredQueues, true)) {
             $this->context->declareQueue($queue);
 
             $this->declaredQueues[] = $queueName;
         }
 
-        if ($this->queueOptions[$queueId]['bind']) {
+        if ($queueOptions['bind']) {
             $this->context->bind(new AmqpBind($queue, $topic, $queue->getQueueName()));
         }
 
@@ -316,7 +332,10 @@ class RabbitMQQueue extends Queue implements QueueContract
 
     protected function getQueueName($queueId = null)
     {
-        return $this->queueOptions[$queueId ?: 'default']['name'];
+        if (isset($this->queueOptions[$queueId ?: 'default'])) {
+            return $this->queueOptions[$queueId ?: 'default']['name'];
+        }
+        return $queueId;
     }
 
     protected function createPayloadArray($job, $queue, $data = '')
@@ -328,7 +347,7 @@ class RabbitMQQueue extends Queue implements QueueContract
 
     protected function makeOptions($job, array $options = [])
     {
-        if ($job instanceof RabbitMQJob) {
+        if (method_exists($job, 'rabbitMQOptions')) {
             return array_merge($options, $job->rabbitMQOptions());
         }
 
