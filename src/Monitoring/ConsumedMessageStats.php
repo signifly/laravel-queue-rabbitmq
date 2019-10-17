@@ -19,12 +19,17 @@ class ConsumedMessageStats implements Stats
     /**
      * @var int
      */
-    protected $timestampMs;
+    protected $queuedAtMs;
 
     /**
      * @var int
      */
     protected $receivedAtMs;
+
+    /**
+     * @var int
+     */
+    protected $processedAtMs;
 
     /**
      * @var string
@@ -61,57 +66,23 @@ class ConsumedMessageStats implements Stats
      */
     protected $status;
 
-    /**
-     * @var string
-     */
-    protected $errorClass;
-
-    /**
-     * @var string
-     */
-    protected $errorMessage;
-
-    /**
-     * @var int
-     */
-    protected $errorCode;
-
-    /**
-     * @var string
-     */
-    protected $errorFile;
-
-    /**
-     * @var int
-     */
-    protected $errorLine;
-
-    /**
-     * @var string
-     */
-    protected $trace;
-
     public function __construct(
         string $consumerId,
-        int $timestampMs,
+        int $queuedAtMs,
         int $receivedAtMs,
+        int $processedAtMs,
         string $queue,
         ?string $messageId,
         ?string $correlationId,
         array $headers,
         array $properties,
         bool $redelivered,
-        string $status,
-        string $errorClass = null,
-        string $errorMessage = null,
-        int $errorCode = null,
-        string $errorFile = null,
-        int $errorLine = null,
-        string $trace = null
+        string $status
     ) {
         $this->consumerId = $consumerId;
-        $this->timestampMs = $timestampMs;
+        $this->queuedAtMs = $queuedAtMs;
         $this->receivedAtMs = $receivedAtMs;
+        $this->processedAtMs = $processedAtMs;
         $this->queue = $queue;
         $this->messageId = $messageId;
         $this->correlationId = $correlationId;
@@ -119,13 +90,6 @@ class ConsumedMessageStats implements Stats
         $this->properties = $properties;
         $this->redelivered = $redelivered;
         $this->status = $status;
-
-        $this->errorClass = $errorClass;
-        $this->errorMessage = $errorMessage;
-        $this->errorCode = $errorCode;
-        $this->errorFile = $errorFile;
-        $this->errorLine = $errorLine;
-        $this->trace = $trace;
     }
 
     public function getConsumerId(): string
@@ -133,14 +97,19 @@ class ConsumedMessageStats implements Stats
         return $this->consumerId;
     }
 
-    public function getTimestampMs(): int
+    public function getqueuedAtMs(): int
     {
-        return $this->timestampMs;
+        return $this->queuedAtMs;
     }
 
     public function getReceivedAtMs(): int
     {
         return $this->receivedAtMs;
+    }
+
+    public function getProcessedAtMs(): int
+    {
+        return $this->processedAtMs;
     }
 
     public function getQueue(): string
@@ -176,35 +145,5 @@ class ConsumedMessageStats implements Stats
     public function getStatus(): string
     {
         return $this->status;
-    }
-
-    public function getErrorClass(): ?string
-    {
-        return $this->errorClass;
-    }
-
-    public function getErrorMessage(): ?string
-    {
-        return $this->errorMessage;
-    }
-
-    public function getErrorCode(): ?int
-    {
-        return $this->errorCode;
-    }
-
-    public function getErrorFile(): ?string
-    {
-        return $this->errorFile;
-    }
-
-    public function getErrorLine(): ?int
-    {
-        return $this->errorLine;
-    }
-
-    public function gettrace(): ?string
-    {
-        return $this->trace;
     }
 }

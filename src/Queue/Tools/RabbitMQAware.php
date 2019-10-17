@@ -17,8 +17,8 @@ trait RabbitMQAware
             'routing_key' => $this->rabbitRoutingKey ?? $this->rabbitQueue,
             'priority' => $this->rabbitPriority,
             'properties' => [
-                'x-queued-at' => (int) (microtime(true) * 1000)
-            ]
+                'x-queued-at' => (int) (microtime(true) * 1000),
+            ],
         ];
     }
 
@@ -26,6 +26,11 @@ trait RabbitMQAware
     {
         $this->rabbitPriority = $priority;
         return $this;
+    }
+
+    public function getBucketIdentifier()
+    {
+        return $this->rabbitQueue;
     }
 
     /**

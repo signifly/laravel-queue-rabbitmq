@@ -88,8 +88,9 @@ class RabbitMQJob extends Job implements JobContract
     {
         app(RabbitStatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
             $this->consumer->getConsumerTag() ?? 'unknown',
-            (int) (microtime(true) * 1000), // now
+            $this->message->getProperties()['x-queued-at'],
             $this->receivedAt,
+            (int) (microtime(true) * 1000), // now
             $this->queue,
             $this->message->getMessageId(),
             $this->message->getCorrelationId(),

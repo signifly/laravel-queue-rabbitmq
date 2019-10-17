@@ -1,6 +1,6 @@
 <?php
 
-namespace Signifly\LaravelQueueRabbitMQ\Queue\Tools;
+namespace Signifly\LaravelQueueRabbitMQ\Queue\Strategies;
 
 trait BackoffStrategyAwareTrait
 {

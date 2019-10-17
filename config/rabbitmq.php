@@ -109,7 +109,7 @@ return [
      * ## Manage the delay strategy from the config.
      *
      * The delay strategy can be set to:
-     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Tools\DlxDelayStrategy::class
+     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\DlxDelayStrategy::class
      *
      * ### Backoff Strategy
      *
@@ -117,10 +117,10 @@ return [
      * This ensures the same behavior as if the `RabbitMqDlxDelayStrategy` was assigned.
      *
      * You can assign different backoffStrategies with extra options, for example:
-     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Tools\ConstantBackoffStrategy::class
-     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Tools\LinearBackoffStrategy::class
-     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Tools\ExponentialBackoffStrategy::class
-     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Tools\PolynomialBackoffStrategy::class
+     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\ConstantBackoffStrategy::class
+     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\LinearBackoffStrategy::class
+     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\ExponentialBackoffStrategy::class
+     *  - \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\PolynomialBackoffStrategy::class
      *
      * The options must be an array of key -> value.
      *
@@ -137,9 +137,9 @@ return [
      *
      */
     'delay' => [
-        'strategy' => env('RABBITMQ_DELAY_STRATEGY', \Signifly\LaravelQueueRabbitMQ\Queue\Tools\DlxDelayStrategy::class),
+        'strategy' => env('RABBITMQ_DELAY_STRATEGY', \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\DlxDelayStrategy::class),
         'backoff'  => [
-            'strategy' => env('RABBITMQ_DELAY_BACKOFF_STRATEGY', \Signifly\LaravelQueueRabbitMQ\Queue\Tools\ExponentialBackoffStrategy::class),
+            'strategy' => env('RABBITMQ_DELAY_BACKOFF_STRATEGY', \Signifly\LaravelQueueRabbitMQ\Queue\Strategies\ExponentialBackoffStrategy::class),
             'options'  => [],
         ],
         'prioritize'=> env('RABBITMQ_DELAY_PRIORITIZE'),

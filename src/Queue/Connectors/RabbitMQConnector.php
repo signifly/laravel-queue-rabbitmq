@@ -15,12 +15,12 @@ use Illuminate\Queue\Events\WorkerStopping;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
-use Signifly\LaravelQueueRabbitMQ\Queue\Tools\BackoffStrategy;
-use Signifly\LaravelQueueRabbitMQ\Queue\Tools\BackoffStrategyAware;
-use Signifly\LaravelQueueRabbitMQ\Queue\Tools\ConstantBackoffStrategy;
+use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\BackoffStrategy;
 use Interop\Amqp\AmqpConnectionFactory as InteropAmqpConnectionFactory;
 use Signifly\LaravelQueueRabbitMQ\Horizon\Listeners\RabbitMQFailedEvent;
+use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\BackoffStrategyAware;
 use Enqueue\AmqpLib\AmqpConnectionFactory as EnqueueAmqpConnectionFactory;
+use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\ConstantBackoffStrategy;
 use Signifly\LaravelQueueRabbitMQ\Horizon\RabbitMQQueue as HorizonRabbitMQQueue;
 
 class RabbitMQConnector implements ConnectorInterface

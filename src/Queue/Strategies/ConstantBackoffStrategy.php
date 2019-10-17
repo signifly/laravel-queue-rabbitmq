@@ -1,8 +1,8 @@
 <?php
 
-namespace Signifly\LaravelQueueRabbitMQ\Queue\Tools;
+namespace Signifly\LaravelQueueRabbitMQ\Queue\Strategies;
 
-class PolynomialBackoffStrategy extends AbstractBackoffStrategy
+class ConstantBackoffStrategy extends AbstractBackoffStrategy
 {
     /**
      * Delay in milliseconds.
@@ -13,6 +13,6 @@ class PolynomialBackoffStrategy extends AbstractBackoffStrategy
      */
     public function backoffDelayTime(int $delay, int $attempt): int
     {
-        return intval(pow($attempt, $this->options->get('factor', 2)) * $delay);
+        return $delay;
     }
 }
