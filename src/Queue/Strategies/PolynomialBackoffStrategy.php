@@ -2,6 +2,8 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Queue\Strategies;
 
+use Illuminate\Support\Arr;
+
 class PolynomialBackoffStrategy extends AbstractBackoffStrategy
 {
     /**
@@ -13,6 +15,6 @@ class PolynomialBackoffStrategy extends AbstractBackoffStrategy
      */
     public function backoffDelayTime(int $delay, int $attempt): int
     {
-        return intval(pow($attempt, $this->options->get('factor', 2)) * $delay);
+        return intval(pow($attempt, Arr::get($this->options, 'factor', 2)) * $delay);
     }
 }
