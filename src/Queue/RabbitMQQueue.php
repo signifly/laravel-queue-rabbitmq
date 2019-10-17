@@ -14,7 +14,7 @@ use Interop\Amqp\Impl\AmqpBind;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Signifly\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
 use Signifly\LaravelQueueRabbitMQ\Monitoring\SentMessageStats;
-use Signifly\LaravelQueueRabbitMQ\Repositories\RabbitStatsRepository;
+use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
 
 class RabbitMQQueue extends Queue implements QueueContract
 {
@@ -139,7 +139,7 @@ class RabbitMQQueue extends Queue implements QueueContract
 
             $producer->send($topic, $message);
 
-            app(RabbitStatsRepository::class)->pushSentMessageStats(new SentMessageStats(
+            app(StatsRepository::class)->pushSentMessageStats(new SentMessageStats(
                 (int) (microtime(true) * 1000),
                 $queue->getQueueName(),
                 true,
@@ -155,11 +155,6 @@ class RabbitMQQueue extends Queue implements QueueContract
 
             return;
         }
-    }
-
-    protected function stats()
-    {
-        return (new GenericStatsStorageFactory())->create('influxdb://127.0.0.1:8086?db=foo');
     }
 
     /** {@inheritdoc} */

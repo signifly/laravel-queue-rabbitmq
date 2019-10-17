@@ -2,12 +2,16 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Repositories;
 
+use InfluxDB\Point;
+use Enqueue\Dsn\Dsn;
 use InfluxDB\Client;
+use InfluxDB\Database;
 use Illuminate\Support\Str;
+use Signifly\LaravelQueueRabbitMQ\Monitoring\ConsumerStats;
 use Signifly\LaravelQueueRabbitMQ\Monitoring\SentMessageStats;
 use Signifly\LaravelQueueRabbitMQ\Monitoring\ConsumedMessageStats;
 
-class InfluxStatsRepository implements StatsStorage
+class InfluxStatsRepository implements StatsRepository
 {
     /**
      * @var Client
@@ -55,14 +59,6 @@ class InfluxStatsRepository implements StatsStorage
 
         $properties = $stats->getProperties();
 
-        if (false === empty($properties[Config::TOPIC])) {
-            $tags['topic'] = $properties[Config::TOPIC];
-        }
-
-        if (false === empty($properties[Config::COMMAND])) {
-            $tags['command'] = $properties[Config::COMMAND];
-        }
-
         $points = [
             new Point($this->config['measurementSentMessages'], 1, $tags, [], $stats->getTimestampMs()),
         ];
@@ -77,14 +73,6 @@ class InfluxStatsRepository implements StatsStorage
         ];
 
         $properties = $stats->getProperties();
-
-        if (false === empty($properties[Config::TOPIC])) {
-            $tags['topic'] = $properties[Config::TOPIC];
-        }
-
-        if (false === empty($properties[Config::COMMAND])) {
-            $tags['command'] = $properties[Config::COMMAND];
-        }
 
         $values = [
             'queuedAt' => $stats->getQueuedAtMs(),

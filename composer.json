@@ -10,11 +10,10 @@
     }
   ],
   "require": {
-    "php": "^7.2",
+    "php": "^7.3",
     "ext-json": "*",
     "enqueue/amqp-lib": "0.9.*",
     "enqueue/dsn": "^0.9.2",
-    "enqueue/enqueue": "^0.9.14",
     "illuminate/database": "^6.0",
     "illuminate/queue": "^6.0",
     "illuminate/support": "^6.0",

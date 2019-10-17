@@ -12,8 +12,8 @@ use Illuminate\Container\Container;
 use Illuminate\Database\DetectsLostConnections;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
+use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Monitoring\ConsumedMessageStats;
-use Signifly\LaravelQueueRabbitMQ\Repositories\RabbitStatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Horizon\RabbitMQQueue as HorizonRabbitMQQueue;
 
 class RabbitMQJob extends Job implements JobContract
@@ -86,7 +86,7 @@ class RabbitMQJob extends Job implements JobContract
 
     protected function pushStats($status)
     {
-        app(RabbitStatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
+        app(StatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
             $this->consumer->getConsumerTag() ?? 'unknown',
             $this->message->getProperties()['x-queued-at'],
             $this->receivedAt,
