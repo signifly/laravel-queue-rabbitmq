@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
 use Illuminate\Container\Container;
 use Interop\Amqp\AmqpSubscriptionConsumer;
 use Signifly\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
+use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
+use Signifly\LaravelQueueRabbitMQ\Tests\Mock\NullStatsRepository;
 
 class RabbitMQQueueTest extends TestCase
 {
@@ -549,6 +551,7 @@ class RabbitMQQueueTest extends TestCase
 
         $container = new Container();
         $container['log'] = $logger;
+        $container->bind(StatsRepository::class, NullStatsRepository::class);
 
         return $container;
     }

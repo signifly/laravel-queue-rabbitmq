@@ -3,6 +3,7 @@
 namespace Signifly\LaravelQueueRabbitMQ\Queue\Jobs;
 
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Interop\Amqp\AmqpMessage;
 use Illuminate\Queue\Jobs\Job;
@@ -86,9 +87,9 @@ class RabbitMQJob extends Job implements JobContract
 
     protected function pushStats($status)
     {
-        app(StatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
+        $this->container->make(StatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
             $this->consumer->getConsumerTag() ?? 'unknown',
-            $this->message->getProperties()['x-queued-at'],
+            Arr::get($this->message->getProperties(), 'x-queued-at', 0),
             $this->receivedAt,
             (int) (microtime(true) * 1000), // now
             $this->queue,

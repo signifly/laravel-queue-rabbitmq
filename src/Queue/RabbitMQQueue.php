@@ -139,7 +139,7 @@ class RabbitMQQueue extends Queue implements QueueContract
 
             $producer->send($topic, $message);
 
-            app(StatsRepository::class)->pushSentMessageStats(new SentMessageStats(
+            $this->container->make(StatsRepository::class)->pushSentMessageStats(new SentMessageStats(
                 (int) (microtime(true) * 1000),
                 $queue->getQueueName(),
                 true,

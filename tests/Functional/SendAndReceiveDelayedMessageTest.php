@@ -9,6 +9,8 @@ use Illuminate\Container\Container;
 use Enqueue\AmqpLib\AmqpConnectionFactory;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
 use Signifly\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
+use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
+use Signifly\LaravelQueueRabbitMQ\Tests\Mock\NullStatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Queue\Connectors\RabbitMQConnector;
 
 /**
@@ -170,6 +172,7 @@ class SendAndReceiveDelayedMessageTest extends TestCase
     {
         $container = new Container();
         $container['log'] = new NullLogger();
+        $container->bind(StatsRepository::class, NullStatsRepository::class);
 
         return $container;
     }
