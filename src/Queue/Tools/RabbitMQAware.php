@@ -16,6 +16,9 @@ trait RabbitMQAware
             'queue' => $this->rabbitQueue,
             'routing_key' => $this->rabbitRoutingKey ?? $this->rabbitQueue,
             'priority' => $this->rabbitPriority,
+            'properties' => [
+                'x-queued-at' => (int) (microtime(true) * 1000)
+            ]
         ];
     }
 

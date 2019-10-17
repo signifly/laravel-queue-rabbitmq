@@ -12,6 +12,8 @@ use Illuminate\Container\Container;
 use Illuminate\Database\DetectsLostConnections;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
+use Signifly\LaravelQueueRabbitMQ\Monitoring\ConsumedMessageStats;
+use Signifly\LaravelQueueRabbitMQ\Repositories\RabbitStatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Horizon\RabbitMQQueue as HorizonRabbitMQQueue;
 
 class RabbitMQJob extends Job implements JobContract
@@ -26,6 +28,7 @@ class RabbitMQJob extends Job implements JobContract
     protected $connection;
     protected $consumer;
     protected $message;
+    protected $receivedAt;
 
     public function __construct(
         Container $container,
@@ -39,6 +42,7 @@ class RabbitMQJob extends Job implements JobContract
         $this->message = $message;
         $this->queue = $consumer->getQueue()->getQueueName();
         $this->connectionName = $connection->getConnectionName();
+        $this->receivedAt = (int) (microtime(true) * 1000);
     }
 
     /**
@@ -56,6 +60,8 @@ class RabbitMQJob extends Job implements JobContract
             [$class, $method] = JobName::parse($payload['job']);
 
             with($this->instance = $this->resolve($class))->{$method}($this, $payload['data']);
+
+            $this->pushStats(ConsumedMessageStats::STATUS_ACK);
         } catch (Exception $exception) {
             if (
                 $this->causedByLostConnection($exception) ||
@@ -69,6 +75,29 @@ class RabbitMQJob extends Job implements JobContract
 
             throw $exception;
         }
+    }
+
+    public function failed($exception)
+    {
+        $this->pushStats(ConsumedMessageStats::STATUS_FAILED);
+
+        return parent::failed($exception);
+    }
+
+    protected function pushStats($status)
+    {
+        app(RabbitStatsRepository::class)->pushConsumedMessageStats(new ConsumedMessageStats(
+            $this->consumer->getConsumerTag() ?? 'unknown',
+            (int) (microtime(true) * 1000), // now
+            $this->receivedAt,
+            $this->queue,
+            $this->message->getMessageId(),
+            $this->message->getCorrelationId(),
+            $this->message->getHeaders(),
+            $this->message->getProperties(),
+            $this->message->isRedelivered(),
+            $status
+        ));
     }
 
     /**
@@ -105,6 +134,8 @@ class RabbitMQJob extends Job implements JobContract
         if ($this->connection instanceof HorizonRabbitMQQueue) {
             $this->connection->deleteReserved($this->queue, $this);
         }
+
+        $this->pushStats(ConsumedMessageStats::STATUS_REJECTED);
     }
 
     /** {@inheritdoc}
@@ -130,6 +161,8 @@ class RabbitMQJob extends Job implements JobContract
         $data = $body['data'];
 
         $this->connection->release($delay, $job, $data, $this->getQueue(), $this->attempts() + 1);
+
+        $this->pushStats(ConsumedMessageStats::STATUS_REQUEUED);
     }
 
     /**
