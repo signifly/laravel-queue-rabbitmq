@@ -15,6 +15,8 @@ return [
     'worker' => env('RABBITMQ_WORKER', 'default'),
 
     'dsn' => env('RABBITMQ_DSN', null),
+    'dynamic_queue_enable' => env('RABBITMQ_DYNAMIC_ENABLE', true),
+    'dynamic_queue_template' => env('RABBITMQ_DYNAMIC_TEMPLATE', 'default'),
 
     /*
      * Could be one a class that implements \Interop\Amqp\AmqpConnectionFactory for example:

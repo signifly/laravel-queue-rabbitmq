@@ -19,6 +19,8 @@ use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
 class RabbitMQQueue extends Queue implements QueueContract
 {
     protected $sleepOnError;
+    protected $dynamicTemplateName;
+    protected $dynamicTemplateEnabled;
 
     protected $queueOptions;
     protected $exchangeOptions;
@@ -65,13 +67,15 @@ class RabbitMQQueue extends Queue implements QueueContract
             });
 
         $this->sleepOnError = $config['sleep_on_error'] ?? 5;
+        $this->dynamicTemplateName = $config['dynamic_queue_template'];
+        $this->dynamicTemplateEnabled = $config['dynamic_queue_enable'];
     }
 
     /** {@inheritdoc} */
-    public function size($queueId = null): int
+    public function size($queueName = null): int
     {
         /** @var AmqpQueue $queue */
-        [$queue] = $this->declareEverything($queueId);
+        [$queue] = $this->declareEverything($queueName);
 
         return $this->context->declareQueue($queue);
     }
@@ -87,7 +91,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     }
 
     /** {@inheritdoc} */
-    public function pushRaw($payload, $queueId = null, array $options = [])
+    public function pushRaw($payload, $queueName = null, array $options = [])
     {
         try {
             /**
@@ -95,7 +99,7 @@ class RabbitMQQueue extends Queue implements QueueContract
              * @var AmqpQueue $queue
              */
             [$queue, $topic] = $this->declareEverything(
-                (isset($options['queue']) ? $options['queue'] : null) ?: $queueId,
+                (isset($options['queue']) ? $options['queue'] : null) ?: $queueName,
                 isset($options['exchange']) ? $options['exchange'] : null
             );
 
@@ -194,12 +198,12 @@ class RabbitMQQueue extends Queue implements QueueContract
      * @return RabbitMQJob|null
      * @throws \Interop\Queue\Exception\SubscriptionConsumerNotSupportedException
      */
-    private function popBasicConsume($queueId): ?RabbitMQJob
+    private function popBasicConsume($queueName): ?RabbitMQJob
     {
-        [$queue] = $this->declareEverything($queueId);
+        [$queue] = $this->declareEverything($queueName);
 
         $options = [];
-        if ($timeout = $this->queueOptions[$queueId ?: 'default']['basic_consume_timeout'] ?? false) {
+        if ($timeout = $this->queueOptions[$queueName ?: 'default']['basic_consume_timeout'] ?? false) {
             $options['timeout'] = $timeout;
         }
         $this->jobConsumer = $this->jobConsumer ?: new BasicConsumeHandler(
@@ -215,10 +219,10 @@ class RabbitMQQueue extends Queue implements QueueContract
      * @param $queueId
      * @return RabbitMQJob|null
      */
-    private function popPolling($queueId): ?RabbitMQJob
+    private function popPolling($queueName): ?RabbitMQJob
     {
         /** @var AmqpQueue $queue */
-        [$queue] = $this->declareEverything($queueId);
+        [$queue] = $this->declareEverything($queueName);
 
         $consumer = $this->context->createConsumer($queue);
 
@@ -233,6 +237,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     public function pop($queueName = null)
     {
         try {
+            $this->ensureQueueConfig($queueName);
             if ($this->queueOptions[$queueName ?: 'default']['basic_consume'] ?? false) {
                 return $this->popBasicConsume($queueName);
             }
@@ -243,6 +248,22 @@ class RabbitMQQueue extends Queue implements QueueContract
 
             return;
         }
+    }
+
+    protected function ensureQueueConfig($queueName = null)
+    {
+        if (! $this->dynamicTemplateEnabled) {
+            return ;
+        }
+
+        if (isset($this->queueOptions[$queueName ?: 'default'])) {
+            return;
+        }
+
+        $this->queueOptions[$queueName] = array_merge(
+            $this->queueOptions[$this->dynamicTemplateName],
+            ['name' => $queueName]
+        );
     }
 
     /**
@@ -282,15 +303,11 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function declareEverything(string $queueId = null, string $exchange = null): array
     {
-        $queueId = $queueId ?: 'default';
+        $this->ensureQueueConfig($queueId);
+        $queueName = $this->getQueueName($queueId);
 
-        if (isset($this->queueOptions[$queueId])) {
-            $queueOptions = $this->queueOptions[$queueId];
-            $queueName = $queueOptions['name'];
-        } else {
-            $queueOptions = $this->queueOptions['default'];
-            $queueName = $queueId;
-        }
+        $queueOptions = $this->queueOptions[$queueName];
+        $queueName = $queueOptions['name'];
 
         $exchangeOptions = $this->exchangeOptions[$exchange ?: 'default'];
         $exchangeName = $exchangeOptions['name'] ?: $queueName;
@@ -344,6 +361,7 @@ class RabbitMQQueue extends Queue implements QueueContract
 
     protected function getQueueName($queueId = null)
     {
+        $this->ensureQueueConfig($queueId);
         if (isset($this->queueOptions[$queueId ?: 'default'])) {
             return $this->queueOptions[$queueId ?: 'default']['name'];
         }
