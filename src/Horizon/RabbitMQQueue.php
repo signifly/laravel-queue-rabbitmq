@@ -6,6 +6,7 @@ use Laravel\Horizon\JobId;
 use Laravel\Horizon\JobPayload;
 use Laravel\Horizon\Events\JobPushed;
 use Laravel\Horizon\Events\JobDeleted;
+use Laravel\Horizon\Events\JobReleased;
 use Laravel\Horizon\Events\JobReserved;
 use Illuminate\Contracts\Events\Dispatcher;
 use Signifly\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
@@ -73,6 +74,11 @@ class RabbitMQQueue extends BaseRabbitMQQueue
     public function release($delay, $job, $data, $queue, $attempts = 0)
     {
         $this->lastPushed = $job;
+
+        $this->event(
+            $this->getQueueName($queue),
+            new JobReleased((new JobPayload($this->createPayload($job, $data)))->prepare($job)->value)
+        );
 
         return parent::release($delay, $job, $data, $queue, $attempts);
     }

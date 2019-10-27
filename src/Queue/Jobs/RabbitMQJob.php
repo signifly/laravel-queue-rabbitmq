@@ -12,6 +12,7 @@ use Illuminate\Queue\Jobs\JobName;
 use Illuminate\Container\Container;
 use Illuminate\Database\DetectsLostConnections;
 use Illuminate\Contracts\Queue\Job as JobContract;
+use Signifly\LaravelQueueRabbitMQ\Events\JobRetry;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
 use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Monitoring\ConsumedMessageStats;
@@ -162,7 +163,9 @@ class RabbitMQJob extends Job implements JobContract
 
         $data = $body['data'];
 
-        $this->connection->release($delay, $job, $data, $this->getQueue(), $this->attempts() + 1);
+        $newId = $this->connection->release($delay, $job, $data, $this->getQueue(), $this->attempts() + 1);
+
+        event(new JobRetry($this, $newId));
 
         $this->pushStats(ConsumedMessageStats::STATUS_REQUEUED);
     }

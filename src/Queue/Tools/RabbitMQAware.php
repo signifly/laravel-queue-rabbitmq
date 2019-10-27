@@ -2,6 +2,8 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Queue\Tools;
 
+use Signifly\LaravelQueueRabbitMQ\Events\JobChainPushed;
+
 trait RabbitMQAware
 {
     public $rabbitExchange = 'default';
@@ -41,7 +43,7 @@ trait RabbitMQAware
     public function dispatchNextJobInChain()
     {
         if (! empty($this->chained)) {
-            dispatch(tap(unserialize(array_shift($this->chained)), function ($next) {
+            $newId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch(tap(unserialize(array_shift($this->chained)), function ($next) {
                 $next->chained = $this->chained;
 
                 $next->onConnection($next->connection ?: $this->chainConnection);
@@ -51,6 +53,8 @@ trait RabbitMQAware
                 $next->chainConnection = $this->chainConnection;
                 $next->chainQueue = $this->chainQueue;
             }));
+
+            event(new JobChainPushed($this->job, $newId));
         }
     }
 }

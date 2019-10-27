@@ -2,6 +2,7 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Queue;
 
+use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Illuminate\Queue\Queue;
 use Illuminate\Support\Str;
@@ -273,7 +274,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function getCorrelationId(): string
     {
-        return $this->correlationId ?: uniqid('', true);
+        return $this->correlationId ?: Uuid::uuid4();
     }
 
     /**
@@ -370,8 +371,14 @@ class RabbitMQQueue extends Queue implements QueueContract
 
     protected function createPayloadArray($job, $queue, $data = '')
     {
-        return array_merge(parent::createPayloadArray($job, $queue, $data), [
-            'id' => $this->getRandomId(),
+        $payload = parent::createPayloadArray($job, $queue, $data);
+
+        if (method_exists($job, 'getJobId')) {
+            $this->setCorrelationId($job->getJobId());
+        }
+
+        return array_merge($payload, [
+            'id' => $this->getCorrelationId(),
         ]);
     }
 
