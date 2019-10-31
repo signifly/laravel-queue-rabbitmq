@@ -157,8 +157,6 @@ class RabbitMQJob extends Job implements JobContract
          */
         if (isset($body['data']['command']) === true) {
             $job = $this->unserialize($body);
-            // todo; fix this
-            $job->refreshJobId();
         } else {
             $job = $this->getName();
         }

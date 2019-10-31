@@ -373,9 +373,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     {
         $payload = parent::createPayloadArray($job, $queue, $data);
 
-        if (method_exists($job, 'getJobId')) {
-            $this->setCorrelationId($job->getJobId());
-        }
+        $this->setCorrelationId((string) Str::uuid());
 
         return array_merge($payload, [
             'id' => $this->getCorrelationId(),
@@ -398,7 +396,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getRandomId(): string
     {
-        return Str::random(32);
+        return (string) Str::uuid();
     }
 
     /**
