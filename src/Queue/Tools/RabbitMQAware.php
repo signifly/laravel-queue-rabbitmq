@@ -2,8 +2,6 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Queue\Tools;
 
-use Signifly\LaravelQueueRabbitMQ\Events\JobChainPushed;
-
 trait RabbitMQAware
 {
     public $rabbitExchange = 'default';
@@ -35,6 +33,7 @@ trait RabbitMQAware
         return $this->rabbitQueue;
     }
 
+    public $parentJob = null;
     /**
      * Dispatch the next job on the chain.
      *
@@ -43,18 +42,26 @@ trait RabbitMQAware
     public function dispatchNextJobInChain()
     {
         if (! empty($this->chained)) {
-            $newId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch(tap(unserialize(array_shift($this->chained)), function ($next) {
+            dispatch(tap(unserialize(array_shift($this->chained)), function ($next) {
                 $next->chained = $this->chained;
 
                 $next->onConnection($next->connection ?: $this->chainConnection);
                 $next->onQueue($next->queue ?: $this->chainQueue);
-                $next->withPriority(1);
+                // Set the priority of the job, to one higher than its parent
+                $next->withPriority($this->rabbitPriority + ($this->parentJob ? 0 : 1));
+                $next->rabbitExchange = $this->rabbitExchange;
+                $next->rabbitQueue = $this->rabbitQueue;
+                $next->rabbitRoutingKey = $this->rabbitRoutingKey;
+                $next->parentJob = $this->parentJob ?? $this->job->getJobId();
+
+                $next->shopId = $this->shopId;
+                $next->shopHandle = $this->shopHandle;
+                $next->provider = $this->provider;
+                $next->rateLimit = $this->rateLimit;
 
                 $next->chainConnection = $this->chainConnection;
                 $next->chainQueue = $this->chainQueue;
             }));
-
-            event(new JobChainPushed($this->job, $newId));
         }
     }
 }

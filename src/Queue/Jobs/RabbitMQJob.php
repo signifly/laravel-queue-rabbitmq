@@ -157,14 +157,21 @@ class RabbitMQJob extends Job implements JobContract
          */
         if (isset($body['data']['command']) === true) {
             $job = $this->unserialize($body);
+            // todo; fix this
+            $job->refreshJobId();
         } else {
             $job = $this->getName();
         }
 
         $data = $body['data'];
 
+        logger("releasingJobForRetry", [
+            'currentId' => $this->getJobId(),
+        ]);
+
         $newId = $this->connection->release($delay, $job, $data, $this->getQueue(), $this->attempts() + 1);
 
+        logger("pushedRetry", ['currentId' => $this->getJobId(), 'newId' => $newId]);
         event(new JobRetry($this, $newId));
 
         $this->pushStats(ConsumedMessageStats::STATUS_REQUEUED);

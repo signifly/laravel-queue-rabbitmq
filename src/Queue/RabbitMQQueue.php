@@ -274,7 +274,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function getCorrelationId(): string
     {
-        return $this->correlationId ?: Uuid::uuid4();
+        return $this->correlationId ?: (string) Uuid::uuid4();
     }
 
     /**
