@@ -163,13 +163,8 @@ class RabbitMQJob extends Job implements JobContract
 
         $data = $body['data'];
 
-        logger("releasingJobForRetry", [
-            'currentId' => $this->getJobId(),
-        ]);
-
         $newId = $this->connection->release($delay, $job, $data, $this->getQueue(), $this->attempts() + 1);
 
-        logger("pushedRetry", ['currentId' => $this->getJobId(), 'newId' => $newId]);
         event(new JobRetry($this, $newId));
 
         $this->pushStats(ConsumedMessageStats::STATUS_REQUEUED);
