@@ -2,7 +2,6 @@
 
 namespace Signifly\LaravelQueueRabbitMQ\Horizon;
 
-use Laravel\Horizon\JobId;
 use Laravel\Horizon\JobPayload;
 use Laravel\Horizon\Events\JobPushed;
 use Laravel\Horizon\Events\JobDeleted;
@@ -111,11 +110,5 @@ class RabbitMQQueue extends BaseRabbitMQQueue
                 $event->connection($this->getConnectionName())->queue($queue)
             );
         }
-    }
-
-    /** {@inheritdoc} */
-    protected function getRandomId(): string
-    {
-        return JobId::generate();
     }
 }
