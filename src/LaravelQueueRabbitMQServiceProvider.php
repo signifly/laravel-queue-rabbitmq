@@ -4,6 +4,7 @@ namespace Signifly\LaravelQueueRabbitMQ;
 
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\ServiceProvider;
+use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Repositories\NullStatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Queue\Connectors\RabbitMQConnector;
 
