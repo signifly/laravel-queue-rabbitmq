@@ -4,9 +4,8 @@ namespace Signifly\LaravelQueueRabbitMQ;
 
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\ServiceProvider;
-use Signifly\LaravelQueueRabbitMQ\Repositories\StatsRepository;
+use Signifly\LaravelQueueRabbitMQ\Repositories\NullStatsRepository;
 use Signifly\LaravelQueueRabbitMQ\Queue\Connectors\RabbitMQConnector;
-use Signifly\LaravelQueueRabbitMQ\Repositories\InfluxStatsRepository;
 
 class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
 {
@@ -38,7 +37,7 @@ class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(StatsRepository::class, function () {
-            return new InfluxStatsRepository(config('queue.connections.rabbitmq.monitor.dsn'));
+            return new NullStatsRepository();
         });
     }
 }

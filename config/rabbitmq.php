@@ -35,11 +35,6 @@ return [
 
     'queue' => env('RABBITMQ_QUEUE', 'default'),
 
-    'monitor' => [
-        'enabled' => env('RABBITMQ_MONITOR', false),
-        'dsn' => env('RABBITMQ_MONITOR_DSN', 'influxdb://127.0.0.1:8086?db=foo')
-    ],
-
     'options' => [
 
         'exchanges' => [

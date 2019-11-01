@@ -57,7 +57,7 @@ class ConsumedMessageStats implements Stats
     protected $properties;
 
     /**
-     * @var bool;
+     * @var bool
      */
     protected $redelivered;
 

@@ -17,7 +17,6 @@
     "illuminate/database": "^6.0",
     "illuminate/queue": "^6.0",
     "illuminate/support": "^6.0",
-    "influxdb/influxdb-php": "^1.15",
     "queue-interop/amqp-interop": "0.8.*"
   },
   "require-dev": {
@@ -40,9 +39,6 @@
       "sort-packages": true
   },
   "extra": {
-    "branch-alias": {
-      "dev-master": "0.1-dev"
-    },
     "laravel": {
       "providers": [
         "Signifly\\LaravelQueueRabbitMQ\\LaravelQueueRabbitMQServiceProvider"
