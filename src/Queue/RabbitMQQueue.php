@@ -28,6 +28,7 @@ class RabbitMQQueue extends Queue implements QueueContract
 
     protected $declaredExchanges = [];
     protected $declaredQueues = [];
+
     /**
      * @var BasicConsumeHandler
      */
@@ -274,7 +275,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function getCorrelationId(): string
     {
-        return $this->correlationId ?: (string) Uuid::uuid4();
+        return $this->correlationId ?: $this->getRandomId();
     }
 
     /**

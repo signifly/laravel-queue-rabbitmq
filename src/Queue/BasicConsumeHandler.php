@@ -74,6 +74,7 @@ class BasicConsumeHandler
                     return false;
                 });
         }
+
         $this->subscriptionConsumer->consume($this->options['timeout'] ?? 10000);
 
         return $this->job;

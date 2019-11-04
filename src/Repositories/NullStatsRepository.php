@@ -11,9 +11,11 @@ class NullStatsRepository implements StatsRepository
     public function pushConsumerStats(ConsumerStats $stats): void
     {
     }
+
     public function pushSentMessageStats(SentMessageStats $stats): void
     {
     }
+
     public function pushConsumedMessageStats(ConsumedMessageStats $stats): void
     {
     }

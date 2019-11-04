@@ -16,6 +16,7 @@ trait BackoffStrategyAwareTrait
     public function setBackoffStrategy(BackoffStrategy $backoffStrategy = null)
     {
         $this->backoffStrategy = $backoffStrategy;
+
         return $this;
     }
 }

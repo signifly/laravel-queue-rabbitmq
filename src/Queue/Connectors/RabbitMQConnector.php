@@ -17,10 +17,10 @@ use Illuminate\Queue\Connectors\ConnectorInterface;
 use Signifly\LaravelQueueRabbitMQ\Queue\RabbitMQQueue;
 use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\BackoffStrategy;
 use Interop\Amqp\AmqpConnectionFactory as InteropAmqpConnectionFactory;
-use Signifly\LaravelQueueRabbitMQ\Horizon\Listeners\RabbitMQFailedEvent;
 use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\BackoffStrategyAware;
 use Enqueue\AmqpLib\AmqpConnectionFactory as EnqueueAmqpConnectionFactory;
 use Signifly\LaravelQueueRabbitMQ\Queue\Strategies\ConstantBackoffStrategy;
+use Signifly\LaravelQueueRabbitMQ\Horizon\Listeners\DispatchHorizonFailedEvent;
 use Signifly\LaravelQueueRabbitMQ\Horizon\RabbitMQQueue as HorizonRabbitMQQueue;
 
 class RabbitMQConnector implements ConnectorInterface
@@ -105,7 +105,7 @@ class RabbitMQConnector implements ConnectorInterface
         }
 
         if ($worker === 'horizon') {
-            $this->dispatcher->listen(JobFailed::class, RabbitMQFailedEvent::class);
+            $this->dispatcher->listen(JobFailed::class, DispatchHorizonFailedEvent::class);
 
             return new HorizonRabbitMQQueue($context, $config);
         }

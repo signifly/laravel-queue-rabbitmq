@@ -16,6 +16,7 @@ class ExponentialBackoffStrategy extends AbstractBackoffStrategy
         if (1 === $attempt) {
             return $delay;
         }
+
         return pow(2, $attempt) * $delay;
     }
 }

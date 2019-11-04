@@ -54,11 +54,6 @@ trait RabbitMQAware
                 $next->rabbitRoutingKey = $this->rabbitRoutingKey;
                 $next->parentJob = $this->parentJob ?? $this->job->getJobId();
 
-                $next->shopId = $this->shopId;
-                $next->shopHandle = $this->shopHandle;
-                $next->provider = $this->provider;
-                $next->rateLimit = $this->rateLimit;
-
                 $next->chainConnection = $this->chainConnection;
                 $next->chainQueue = $this->chainQueue;
             }));

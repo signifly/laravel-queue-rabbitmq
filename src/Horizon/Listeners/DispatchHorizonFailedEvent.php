@@ -4,10 +4,10 @@ namespace Signifly\LaravelQueueRabbitMQ\Horizon\Listeners;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Laravel\Horizon\Events\JobFailed as HorizonJobFailed;
-use Illuminate\Queue\Events\JobFailed as LaravelJobFailed;
 use Signifly\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
+use Illuminate\Queue\Events\JobFailed as LaravelJobFailed;
 
-class RabbitMQFailedEvent
+class DispatchHorizonFailedEvent
 {
     /**
      * The event dispatcher implementation.
@@ -39,8 +39,16 @@ class RabbitMQFailedEvent
             return;
         }
 
-        $this->events->dispatch((new HorizonJobFailed(
-            $event->exception, $event->job, $event->job->getRawBody()
-        ))->connection($event->connectionName)->queue($event->job->getQueue()));
+        $horizonJobFailedEvent = new HorizonJobFailed(
+            $event->exception,
+            $event->job,
+            $event->job->getRawBody()
+        );
+
+        $horizonJobFailedEvent
+            ->connection($event->connectionName)
+            ->queue($event->job->getQueue());
+
+        $this->events->dispatch($horizonJobFailedEvent);
     }
 }

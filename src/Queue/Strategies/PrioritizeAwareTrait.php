@@ -16,6 +16,7 @@ trait PrioritizeAwareTrait
     public function setPrioritize(?bool $prioritize = null)
     {
         $this->prioritize = $prioritize;
+
         return $this;
     }
 }
